@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -9,15 +10,15 @@ app.use(express.static("public"));
 app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 
-mongoose.connect("mongodb+srv://admin_subhranshu:<ur password>@cluster0.one0j.mongodb.net/secretsApp");
+mongoose.connect("mongodb+srv://admin_subhranshu:test123@cluster0.one0j.mongodb.net/secretsApp");
 
 const userSkeliton = new mongoose.Schema({
     email: String,
     password: String
 }); // schema
 
-const secretKey = "MyNameIsSubhranshuCHoudhury.";
-userSkeliton.plugin(encrypt,{secret:secretKey, encryptedFields:["password"]}); // level 2 security encryption
+
+userSkeliton.plugin(encrypt,{secret:process.env.SECRET_KEY, encryptedFields:["password"]});
 
 const User = new mongoose.model("user",userSkeliton);
 
