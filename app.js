@@ -10,7 +10,7 @@ app.use(express.static("public"));
 app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 
-mongoose.connect("mongodb+srv://admin_subhranshu:test123@cluster0.one0j.mongodb.net/secretsApp");
+mongoose.connect(`mongodb+srv://admin_subhranshu:${process.env.DB_KEY}@cluster0.one0j.mongodb.net/secretsApp`);
 
 const userSkeliton = new mongoose.Schema({
     email: String,
