@@ -1,13 +1,12 @@
 require("dotenv").config();
-const md5 = require("md5");
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-// const encrypt = require("mongoose-encryption");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 const app = express();
 
-console.log(md5("chintu"))
 
 app.use(express.static("public"));
 app.set("view engine","ejs");
@@ -21,7 +20,6 @@ const userSkeliton = new mongoose.Schema({
 }); // schema
 
 
-// userSkeliton.plugin(encrypt,{secret:process.env.SECRET_KEY, encryptedFields:["password"]});
 
 const User = new mongoose.model("user",userSkeliton);
 
@@ -38,35 +36,51 @@ app.get("/register",(req,res)=>{
 });
 
 app.post("/register",(req,res)=>{
-    const newUser = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
 
-    newUser.save((err)=>{
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        // Store hash in your password DB.
         if(err){
             res.send(err);
         }else{
-            res.render("secrets");
+            const newUser = new User({
+                email: req.body.username,
+                password: hash
+            });
+            newUser.save((err)=>{
+                if(err){
+                    res.send(err);
+                }else{
+                    res.render("secrets");
+                }
+        
+            });
         }
-
     });
+    
+
+    
 });
 
 app.post("/login",(req,res)=>{
     const username = req.body.username;
-    const password = md5(req.body.password);
+    const password = req.body.password;
 
     User.findOne({email:username},(err,userFound)=>{
         if(err){
             res.send(err);
         }else{
             if(userFound){
-                if(userFound.password === password){
-                    res.render("secrets");
-                }else{
-                    res.send("Wrong UserID/Password!");
-                }
+                bcrypt.compare(password, userFound.password, function(err, result) {
+                    if(err){
+                        res.send(err);
+                    }else{
+                        if(result){
+                            res.render("secrets");
+                        }else{
+                            res.send("Wrong Password!");
+                        }
+                    }
+                });
             }
         }
     });
